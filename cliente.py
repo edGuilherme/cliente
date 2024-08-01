@@ -42,8 +42,6 @@ if __name__ == "__main__":
     result = client.perform_operation("Subtracao", 10, 2)
     print("Resultado da subtração:", result)
 
-    try:
-        result = client.perform_operation("vasco", 10, 2)
-        print("Resultado da operação:", result)
-    except ValueError as e:
-        print(e)
+    result = client.perform_operation("vasco", 10, 2)
+    print("Resultado da operação:", result)
+
