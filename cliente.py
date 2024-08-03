@@ -12,16 +12,28 @@ class OperationsClient:
         else:
             response.raise_for_status()
 
-    def perform_operation(self, operation_name, param1, param2):
+    def _get_operation_path(self, operation_name, param1, param2):
         operations = self.operations()
-
         operation = next((op for op in operations["operations"] if op["name"].lower() == operation_name.lower()), None)
         if not operation:
             raise ValueError(f"Operação '{operation_name}' não encontrada")
+        return operation["path"].replace("param1", str(param1)).replace("param2", str(param2))
 
-        operation_url = self.base_url + operation["path"].replace("param1", str(param1)).replace("param2", str(param2))
+    def soma(self, param1, param2):
+        path = self._get_operation_path("Soma", param1, param2)
+        return self._perform_post_request(path)
 
-        response = requests.post(operation_url)
+    def divisao(self, param1, param2):
+        path = self._get_operation_path("Divisao", param1, param2)
+        return self._perform_post_request(path)
+
+    def subtracao(self, param1, param2):
+        path = self._get_operation_path("Subtracao", param1, param2)
+        return self._perform_post_request(path)
+
+    def _perform_post_request(self, path):
+        url = self.base_url + path
+        response = requests.post(url)
         if response.status_code == 200:
             return response.json()
         else:
@@ -30,18 +42,17 @@ class OperationsClient:
 if __name__ == "__main__":
     client = OperationsClient("https://calculadora-fxpc.onrender.com")
 
-    operations = client.operations()
-    print("Operações disponíveis:", operations)
+    try:
+        # Testar operações específicas
+        result = client.soma(5, 3)
+        print("Resultado da soma:", result)
 
-    result = client.perform_operation("Soma", 5, 3)
-    print("Resultado da soma:", result)
+        result = client.divisao(10, 2)
+        print("Resultado da divisão:", result)
 
-    result = client.perform_operation("Divisao", 10, 2)
-    print("Resultado da divisão:", result)
-
-    result = client.perform_operation("Subtracao", 10, 2)
-    print("Resultado da subtração:", result)
-
-    result = client.perform_operation("vasco", 10, 2)
-    print("Resultado da operação:", result)
-
+        result = client.subtracao(10, 2)
+        print("Resultado da subtração:", result)
+    except ValueError as e:
+        print(e)
+    except requests.RequestException as e:
+        print(f"Erro na requisição: {e}")
